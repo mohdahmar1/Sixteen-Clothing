@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sixteen Clothing Store</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Jost:wght@400;500&display=swap">
+<style>
+:root{--bg:#e6e6e5;--surface:#f4f4f3;--ink:#1e1f21;--mid:#5f6266;--line:#c4c5c7;--dark:#2a2c2f;--on-dark:#f0f0ef;--t1:#d3d4d4;--t2:#bfc1c3;--t3:#a9acaf;--t4:#8f9296;--blend:multiply;--inv:none;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1a1b1d;--surface:#232528;--ink:#ececeb;--mid:#a0a3a7;--line:#3a3c40;--dark:#ececeb;--on-dark:#1a1b1d;--t1:#2e3033;--t2:#383a3e;--t3:#44474b;--t4:#55585d;--blend:screen;--inv:invert(1)}}
+:root[data-theme="dark"]{--bg:#1a1b1d;--surface:#232528;--ink:#ececeb;--mid:#a0a3a7;--line:#3a3c40;--dark:#ececeb;--on-dark:#1a1b1d;--t1:#2e3033;--t2:#383a3e;--t3:#44474b;--t4:#55585d;--blend:screen;--inv:invert(1)}
+html{scroll-padding-top:calc(88px + env(safe-area-inset-top,0px));scroll-behavior:smooth}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.6 Jost,system-ui,sans-serif}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+.logo{display:block;mix-blend-mode:var(--blend);filter:var(--inv)}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;background:var(--bg);border-bottom:1px solid var(--line)}
+.bar{max-width:1180px;margin:auto;padding:10px 24px;display:flex;align-items:center;gap:28px}
+.bar .logo{width:64px;height:64px}
+nav{margin-left:auto;display:flex;gap:28px}
+nav a{text-decoration:none;color:var(--mid);font-size:15px}
+nav a:hover{color:var(--ink)}
+.bag{font:500 15px Jost,sans-serif;background:var(--dark);color:var(--on-dark);border:0;border-radius:999px;padding:10px 20px;cursor:pointer}
+.hero{max-width:1180px;margin:auto;padding:72px 24px 88px;display:grid;grid-template-columns:1.1fr .9fr;gap:56px;align-items:center}
+h1,h2,h3{font-family:"Cormorant Garamond",Georgia,serif;font-weight:600;line-height:1.05;margin:0}
+h1{font-size:clamp(44px,6.4vw,84px);letter-spacing:-.01em}
+.hero p{max-width:46ch;color:var(--mid);font-size:18px;margin:24px 0 36px}
+.btns{display:flex;gap:14px;flex-wrap:wrap}
+.btn{display:inline-block;text-decoration:none;font-weight:500;padding:14px 28px;border-radius:999px;border:1px solid var(--dark)}
+.btn.fill{background:var(--dark);color:var(--on-dark)}
+.emblem{aspect-ratio:1;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;box-shadow:inset 0 0 0 18px var(--bg),inset 0 0 0 19px var(--line)}
+.emblem .logo{width:74%}
+.cols{max-width:1180px;margin:auto;padding:0 24px 88px;display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.col{display:flex;flex-direction:column;justify-content:flex-end;min-height:260px;padding:28px;border-radius:6px;text-decoration:none;border:0;text-align:left;font:inherit;color:var(--ink);cursor:pointer}
+.col:nth-child(1){background:var(--t1)}.col:nth-child(2){background:var(--t2)}.col:nth-child(3){background:var(--t3)}
+.col h3{font-size:36px}.col span{color:var(--mid)}
+.shop{background:var(--surface);border-block:1px solid var(--line)}
+.wrap{max-width:1180px;margin:auto;padding:80px 24px}
+.head{display:flex;justify-content:space-between;align-items:end;gap:24px;flex-wrap:wrap;margin-bottom:36px}
+h2{font-size:clamp(34px,4vw,52px)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{font:500 14px Jost,sans-serif;padding:8px 18px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--dark);color:var(--on-dark);border-color:var(--dark)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:22px}
+.card[hidden]{display:none}
+.tile{aspect-ratio:4/5;border-radius:6px;display:grid;place-items:center;color:var(--ink)}
+.tile svg{width:58%;fill:currentColor;opacity:.78}
+.card h3{font-size:24px;margin-top:14px}
+.meta{display:flex;justify-content:space-between;align-items:center;color:var(--mid);margin-top:4px}
+.add{font:500 14px Jost,sans-serif;background:none;border:1px solid var(--line);border-radius:999px;padding:6px 14px;color:var(--ink);cursor:pointer}
+.add:hover{background:var(--dark);color:var(--on-dark)}
+.about{display:grid;grid-template-columns:1fr 1fr;gap:56px}
+.about p{color:var(--mid);max-width:52ch;margin:0 0 16px}
+footer{border-top:1px solid var(--line)}
+.foot{max-width:1180px;margin:auto;padding:40px 24px;display:flex;gap:32px;align-items:center;flex-wrap:wrap;color:var(--mid)}
+.foot .logo{width:72px}
+.foot div{margin-left:auto}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,20px);background:var(--dark);color:var(--on-dark);padding:12px 22px;border-radius:999px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:20}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+@media (max-width:900px){.hero,.about{grid-template-columns:1fr}.emblem{max-width:440px;margin:auto}.grid{grid-template-columns:repeat(2,1fr)}.cols{grid-template-columns:1fr}.col{min-height:160px}nav{display:none}.bag{margin-left:auto}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}#toast{transition:none}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<symbol id="tee" viewBox="0 0 100 100"><path d="M30 14 10 28l10 14 8-5v51h44V37l8 5 10-14-20-14Q50 26 30 14Z"/></symbol>
+<symbol id="coat" viewBox="0 0 100 100"><path d="M32 10 8 30l8 48 12-4v20h44V74l12 4 8-48L68 10 50 30Z"/></symbol>
+<symbol id="pants" viewBox="0 0 100 100"><path d="M30 8h40l6 86H54L50 38l-4 56H24Z"/></symbol>
+<symbol id="knit" viewBox="0 0 100 100"><path d="M32 14 6 62l12 6 12-22v44h40V46l12 22 12-6L68 14Q50 24 32 14Z"/></symbol>
+</svg>
+
+<header><div class="bar">
+<a href="#top" aria-label="Sixteen home"><img class="logo" src="logo.png" alt="Sixteen Clothing Store logo"></a>
+<nav aria-label="Main"><a href="#collections">Collections</a><a href="#new">New arrivals</a><a href="#about">About</a><a href="#visit">Visit</a></nav>
+<button class="bag" id="bag" type="button">Bag (0)</button>
+</div></header>
+
+<main id="top">
+<section class="hero">
+<div>
+<h1>Considered clothing in every shade of grey.</h1>
+<p>Sixteen makes everyday pieces in stone, slate and charcoal. Simple cuts, honest fabrics, finished to last.</p>
+<div class="btns"><a class="btn fill" href="#new">Shop new arrivals</a><a class="btn" href="#collections">Browse collections</a></div>
+</div>
+<div class="emblem"><img class="logo" src="logo.png" alt="Sixteen emblem"></div>
+</section>
+
+<section class="cols" id="collections" aria-label="Collections">
+<button class="col" data-go="Men" type="button"><h3>Men</h3><span>Shirts, tees and trousers</span></button>
+<button class="col" data-go="Women" type="button"><h3>Women</h3><span>Knits, trousers and tops</span></button>
+<button class="col" data-go="Outerwear" type="button"><h3>Outerwear</h3><span>Coats and blazers</span></button>
+</section>
+
+<section class="shop" id="new"><div class="wrap">
+<div class="head"><h2>New arrivals</h2>
+<div class="chips" role="group" aria-label="Filter products">
+<button class="chip" aria-pressed="true" data-f="All" type="button">All</button>
+<button class="chip" aria-pressed="false" data-f="Men" type="button">Men</button>
+<button class="chip" aria-pressed="false" data-f="Women" type="button">Women</button>
+<button class="chip" aria-pressed="false" data-f="Outerwear" type="button">Outerwear</button>
+</div></div>
+<div class="grid" id="grid"></div>
+</div></section>
+
+<section class="wrap about" id="about">
+<h2>Sixteen is a clothing store with a quiet point of view.</h2>
+<div>
+<p>We choose fewer pieces and make them better. Every item in the store is picked for fit, fabric and how well it pairs with the rest of your wardrobe.</p>
+<p>Our palette stays in grey on purpose, so everything you buy works together.</p>
+</div>
+</section>
+</main>
+
+<footer id="visit"><div class="foot">
+<img class="logo" src="logo.png" alt="Sixteen logo">
+<span>[Store address] &nbsp;|&nbsp; [Phone] &nbsp;|&nbsp; [Opening hours]</span>
+<div>© Sixteen Clothing Store</div>
+</div></footer>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+var P=[
+["Boxy Cotton Tee","Men",1299,"tee",1],["Linen Camp Shirt","Men",2199,"coat",2],
+["Tapered Trousers","Men",2799,"pants",3],["Wool Overcoat","Outerwear",8499,"coat",4],
+["Rib Knit Top","Women",1799,"tee",2],["Wide-Leg Trousers","Women",2999,"pants",1],
+["Relaxed Blazer","Outerwear",5499,"coat",3],["Heavy Knit Pullover","Women",3499,"knit",4]];
+var grid=document.getElementById("grid"),bag=document.getElementById("bag"),toast=document.getElementById("toast"),n=0,tt;
+grid.innerHTML=P.map(function(p,i){return '<article class="card" data-c="'+p[1]+'"><div class="tile" style="background:var(--t'+p[4]+')"><svg aria-hidden="true"><use href="#'+p[3]+'"/></svg></div><h3>'+p[0]+'</h3><div class="meta"><span>₹'+p[2].toLocaleString("en-IN")+'</span><button class="add" type="button" data-i="'+i+'">Add to bag</button></div></article>'}).join("");
+function filter(f){document.querySelectorAll(".chip").forEach(function(c){c.setAttribute("aria-pressed",c.dataset.f===f)});
+document.querySelectorAll(".card").forEach(function(c){c.hidden=!(f==="All"||c.dataset.c===f)})}
+document.querySelectorAll(".chip").forEach(function(c){c.onclick=function(){filter(c.dataset.f)}});
+document.querySelectorAll(".col").forEach(function(c){c.onclick=function(){filter(c.dataset.go);document.getElementById("new").scrollIntoView()}});
+grid.onclick=function(e){var b=e.target.closest(".add");if(!b)return;n++;bag.textContent="Bag ("+n+")";
+toast.textContent=P[b.dataset.i][0]+" added to bag";toast.classList.add("on");clearTimeout(tt);tt=setTimeout(function(){toast.classList.remove("on")},1800)};
+</script>
+</body>
+</html>

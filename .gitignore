@@ -1,0 +1,5 @@
+node_modules
+.env
+sixteen.db
+sixteen.db-shm
+sixteen.db-wal
