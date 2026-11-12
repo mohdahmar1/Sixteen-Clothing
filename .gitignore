@@ -3,3 +3,4 @@ node_modules
 sixteen.db
 sixteen.db-shm
 sixteen.db-wal
+uploads

@@ -1,5 +1,7 @@
 require('dotenv').config();
 const path = require('path');
+const fs = require('fs');
+const crypto = require('crypto');
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
@@ -7,6 +9,7 @@ const rateLimit = require('express-rate-limit');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { db, seed } = require('./db');
+const twilio = require('twilio'); // <-- Place it here with the other requires
 
 const JWT_SECRET = process.env.JWT_SECRET;
 if (!JWT_SECRET || JWT_SECRET === 'change-me') {
@@ -15,10 +18,15 @@ if (!JWT_SECRET || JWT_SECRET === 'change-me') {
 }
 seed();
 
+// Uploaded photos live next to the database file (on Railway that is the /data volume, so they survive restarts).
+const UPLOAD_DIR = process.env.UPLOAD_DIR || path.join(path.dirname(path.resolve(process.env.DB_FILE || 'sixteen.db')), 'uploads');
+fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+
 const app = express();
 app.set('trust proxy', 1);
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(express.json({ limit: '50kb' }));
+app.use('/uploads', express.static(UPLOAD_DIR, { maxAge: '7d' }));
 const origins = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
 if (origins.length) app.use(cors({ origin: origins }));
 
@@ -117,6 +125,39 @@ app.post('/api/contact', limiter(5, 60), (req, res) => {
   res.status(201).json({ ok: true });
 });
 
+// OTP 
+
+const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+const activeOtps = new Map();
+
+app.post('/api/auth/send-otp', limiter(5, 15), (req, res) => {
+  const phone = str(req.body.phone, 20);
+  if (!isPhone(phone)) return bad(res, 'Invalid phone number.');
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  activeOtps.set(phone, otp);
+
+  client.messages.create({
+    body: `Your Sixteen verification code is: ${otp}`,
+    from: process.env.TWILIO_PHONE_NUMBER,
+    to: phone
+  })
+  .then(() => res.json({ ok: true }))
+  .catch(err => {
+    console.error(err);
+    bad(res, 'Failed to send SMS OTP.', 500);
+  });
+});
+
+app.post('/api/auth/verify-otp', (req, res) => {
+  const { phone, otp } = req.body;
+  if (activeOtps.get(phone) === otp) {
+    activeOtps.delete(phone);
+    return res.json({ ok: true });
+  }
+  return bad(res, 'Incorrect OTP entered.', 400);
+});
+
 // ---------- admin ----------
 app.post('/api/admin/login', limiter(10), wrap(async (req, res) => {
   const a = db.prepare('SELECT * FROM admins WHERE email=?').get(str(req.body.email, 120).toLowerCase());
@@ -155,9 +196,25 @@ function readProduct(b) {
     name: str(b.name, 120), category: b.category, price: Number(b.price),
     description: str(b.description, 1000), image: str(b.image, 300), stock: Number(b.stock),
   };
+  if (p.image && !/^(\/uploads\/[\w.-]+|https:\/\/\S+)$/.test(p.image)) return null;
   if (!p.name || !CATS.includes(p.category) || !Number.isInteger(p.price) || p.price < 1 || !Number.isInteger(p.stock) || p.stock < 0) return null;
   return p;
 }
+
+// Photo upload: the admin page sends the raw image bytes (resized in the browser).
+const TYPES = [
+  { ext: 'jpg', ok: b => b[0] === 0xFF && b[1] === 0xD8 && b[2] === 0xFF },
+  { ext: 'png', ok: b => b[0] === 0x89 && b.toString('latin1', 1, 4) === 'PNG' },
+  { ext: 'webp', ok: b => b.toString('latin1', 0, 4) === 'RIFF' && b.toString('latin1', 8, 12) === 'WEBP' },
+];
+app.post('/api/admin/upload', adminOnly, express.raw({ type: 'image/*', limit: '6mb' }), (req, res) => {
+  const b = req.body;
+  const t = Buffer.isBuffer(b) && b.length > 12 ? TYPES.find(x => x.ok(b)) : null;
+  if (!t) return bad(res, 'Upload a JPG, PNG or WebP photo (up to 6 MB).');
+  const name = crypto.randomBytes(12).toString('hex') + '.' + t.ext;
+  fs.writeFileSync(path.join(UPLOAD_DIR, name), b);
+  res.status(201).json({ url: '/uploads/' + name });
+});
 
 app.get('/api/admin/products', adminOnly, (req, res) =>
   res.json(db.prepare('SELECT * FROM products ORDER BY id DESC').all()));
@@ -171,9 +228,12 @@ app.post('/api/admin/products', adminOnly, (req, res) => {
 
 app.put('/api/admin/products/:id', adminOnly, (req, res) => {
   const p = readProduct(req.body);
-  if (!p) return bad(res, 'Check name, category, price and stock.');
-  const r = db.prepare('UPDATE products SET name=@name,category=@category,price=@price,description=@description,image=@image,stock=@stock WHERE id=@id').run({ ...p, id: req.params.id });
-  r.changes ? res.json({ ok: true }) : bad(res, 'Product not found.', 404);
+  if (!p) return bad(res, 'Check name, category, price, stock and photo.');
+  const cur = db.prepare('SELECT active FROM products WHERE id=?').get(req.params.id);
+  if (!cur) return bad(res, 'Product not found.', 404);
+  const active = req.body.active === undefined ? cur.active : (req.body.active ? 1 : 0);
+  db.prepare('UPDATE products SET name=@name,category=@category,price=@price,description=@description,image=@image,stock=@stock,active=@active WHERE id=@id').run({ ...p, active, id: req.params.id });
+  res.json({ ok: true });
 });
 
 // Products are hidden, not deleted, so old orders keep working.
